@@ -113,3 +113,8 @@ desktop.ini
 .turbo/
 .vercel/
 .eslintcache
+
+#backend env
+.env
+.env.*
+!.env.example
