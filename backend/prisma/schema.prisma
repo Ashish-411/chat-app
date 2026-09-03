@@ -6,3 +6,79 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum ConversationType {
+  DM
+  GROUP
+}
+
+enum ParticipantRole {
+  ADMIN
+  MEMBER
+}
+
+enum AuthProvider {
+  CREDENTIALS
+  GOOGLE
+  FACEBOOK
+}
+
+model User {
+  id         String       @id @default(cuid())
+  email      String?      @unique
+  name       String?
+  password   String?
+  provider   AuthProvider @default(CREDENTIALS)
+  providerId String?
+  avatarUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages     Message[]
+  participants Participant[]
+
+  @@unique([provider, providerId])
+  @@map("users")
+}
+
+model Conversation {
+  id        String           @id @default(cuid())
+  type      ConversationType
+  name      String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  participants Participant[]
+  messages     Message[]
+
+  @@map("conversations")
+}
+
+model Participant {
+  id             String          @id @default(cuid())
+  userId         String
+  conversationId String
+  role           ParticipantRole @default(MEMBER)
+  joinedAt       DateTime        @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
+  @@map("participants")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  content        String
+  senderId       String
+  conversationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
