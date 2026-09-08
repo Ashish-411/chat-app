@@ -14,8 +14,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 
 @WebSocketGateway({
   cors: {
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
-    credentials: true,
+    origin: '*', 
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -27,14 +26,34 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly prisma: PrismaService,
   ) {}
 
+  // Helper to check if a user has any active socket connections
+  private isUserOnline(userId: string): boolean {
+    const rooms = this.server?.sockets?.adapter?.rooms as Map<string, Set<string>> | undefined;
+    const room = rooms?.get(`user:${userId}`);
+    return room ? room.size > 0 : false;
+  }
+
+  // Broadcasts online/offline status to all conversations the user belongs to
+  private async broadcastPresence(userId: string, status: 'online' | 'offline') {
+    const participations = await this.prisma.participant.findMany({
+      where: { userId },
+      select: { conversationId: true },
+    });
+
+    for (const p of participations) {
+      this.server.to(`conversation:${p.conversationId}`).emit('user:presence', {
+        userId,
+        status,
+      });
+    }
+  }
+
   async handleConnection(client: Socket) {
     try {
       const token = client.handshake.auth?.token as string | undefined;
 
       if (!token) {
-        client.emit('connection:error', {
-          message: 'Authentication token missing',
-        });
+        client.emit('connection:error', { message: 'Authentication token missing' });
         client.disconnect(true);
         return;
       }
@@ -42,34 +61,45 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = await this.jwt.verifyAsync<{ sub: string }>(token);
 
       if (!payload?.sub) {
-        client.emit('connection:error', {
-          message: 'Invalid token payload',
-        });
+        client.emit('connection:error', { message: 'Invalid token payload' });
         client.disconnect(true);
         return;
       }
 
-      client.data.userId = payload.sub;
+      const userId = payload.sub;
+      client.data.userId = userId;
 
-      // Each logged-in user joins their personal room.
-      // Later this is useful for presence, notifications, etc.
-      await client.join(`user:${payload.sub}`);
+      // Join personal room
+      await client.join(`user:${userId}`);
 
-      client.emit('connection:success', {
-        userId: payload.sub,
-        socketId: client.id,
-      });
+      client.emit('connection:success', { userId, socketId: client.id });
+
+      // Check if this is their FIRST socket (they just came online)
+      const rooms = this.server.sockets.adapter.rooms as Map<string, Set<string>> | undefined;
+      const userRoom = rooms?.get(`user:${userId}`);
+      if (userRoom && userRoom.size === 1) {
+        await this.broadcastPresence(userId, 'online');
+      }
     } catch {
-      client.emit('connection:error', {
-        message: 'Invalid or expired token',
-      });
+      client.emit('connection:error', { message: 'Invalid or expired token' });
       client.disconnect(true);
     }
   }
 
-  handleDisconnect(client: Socket) {
-    // Later we will use this for presence:
-    // user offline, typing cleanup, etc.
+  async handleDisconnect(client: Socket) {
+    const userId = client.data.userId as string | undefined;
+    if (!userId) return;
+
+    // Wait 100ms to allow Socket.IO to clean up the room after disconnect
+    setTimeout(async () => {
+      const rooms = this.server.sockets.adapter.rooms as Map<string, Set<string>> | undefined;
+      const userRoom = rooms?.get(`user:${userId}`);
+      
+      // If room doesn't exist or is empty, they are completely offline
+      if (!userRoom || userRoom.size === 0) {
+        await this.broadcastPresence(userId, 'offline');
+      }
+    }, 100);
   }
 
   @SubscribeMessage('conversation:join')
@@ -79,40 +109,35 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     const userId = client.data.userId as string | undefined;
 
-    if (!userId) {
-      return {
-        ok: false,
-        error: 'Unauthorized',
-      };
-    }
-
-    if (!data?.conversationId) {
-      return {
-        ok: false,
-        error: 'conversationId is required',
-      };
+    if (!userId || !data?.conversationId) {
+      return { ok: false, error: 'Unauthorized or missing conversationId' };
     }
 
     const participant = await this.prisma.participant.findFirst({
-      where: {
-        userId,
-        conversationId: data.conversationId,
-      },
+      where: { userId, conversationId: data.conversationId },
     });
 
     if (!participant) {
-      return {
-        ok: false,
-        error: 'You are not a participant of this conversation',
-      };
+      return { ok: false, error: 'You are not a participant of this conversation' };
     }
 
     await client.join(`conversation:${data.conversationId}`);
 
-    return {
-      ok: true,
-      conversationId: data.conversationId,
-    };
+    // Fetch all participants to send initial presence state
+    const allParticipants = await this.prisma.participant.findMany({
+      where: { conversationId: data.conversationId },
+      select: { userId: true },
+    });
+
+    const presenceMap = allParticipants.map((p) => ({
+      userId: p.userId,
+      isOnline: this.isUserOnline(p.userId),
+    }));
+
+    // Send initial presence to the user who just joined
+    client.emit('conversation:presence', presenceMap);
+
+    return { ok: true, conversationId: data.conversationId };
   }
 
   @SubscribeMessage('conversation:leave')
@@ -121,17 +146,42 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { conversationId?: string },
   ) {
     if (!data?.conversationId) {
-      return {
-        ok: false,
-        error: 'conversationId is required',
-      };
+      return { ok: false, error: 'conversationId is required' };
     }
-
     await client.leave(`conversation:${data.conversationId}`);
+    return { ok: true, conversationId: data.conversationId };
+  }
 
-    return {
-      ok: true,
+  // --- TYPING INDICATORS ---
+
+  @SubscribeMessage('typing:start')
+  handleTypingStart(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string },
+  ) {
+    const userId = client.data.userId;
+    if (!userId || !data?.conversationId) return;
+
+    // Broadcast to everyone in the room EXCEPT the sender
+    client.broadcast.to(`conversation:${data.conversationId}`).emit('typing:update', {
+      userId,
       conversationId: data.conversationId,
-    };
+      isTyping: true,
+    });
+  }
+
+  @SubscribeMessage('typing:stop')
+  handleTypingStop(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string },
+  ) {
+    const userId = client.data.userId;
+    if (!userId || !data?.conversationId) return;
+
+    client.broadcast.to(`conversation:${data.conversationId}`).emit('typing:update', {
+      userId,
+      conversationId: data.conversationId,
+      isTyping: false,
+    });
   }
 }
