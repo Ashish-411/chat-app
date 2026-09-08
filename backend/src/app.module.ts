@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
 import { ConversationsModule } from './conversations/conversations.module.js';
 import { MessagesModule } from './messages/messages.module.js';
+import { EventsModule } from './events/events.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -22,6 +23,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     UsersModule,
     ConversationsModule,
     MessagesModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

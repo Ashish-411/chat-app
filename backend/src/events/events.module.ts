@@ -17,6 +17,6 @@ const sevenDaysInSeconds = 7 * 24 * 60 * 60;
     }),
   ],
   providers: [EventsGateway],
-  exports: [EventsGateway],
+  exports: [EventsGateway], 
 })
 export class EventsModule {}
