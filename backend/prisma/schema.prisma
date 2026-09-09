@@ -23,6 +23,12 @@ enum AuthProvider {
   FACEBOOK
 }
 
+enum MessageStatusType {
+  SENT
+  DELIVERED
+  READ
+}
+
 model User {
   id         String       @id @default(cuid())
   email      String?      @unique
@@ -37,6 +43,8 @@ model User {
 
   messages     Message[]
   participants Participant[]
+  messageReceipts MessageReceipt[]  
+
 
   @@unique([provider, providerId])
   @@map("users")
@@ -79,6 +87,27 @@ model Message {
 
   sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  receipts     MessageReceipt[] 
+
 
   @@map("messages")
+}
+
+
+
+model MessageReceipt {
+  id          String            @id @default(cuid())
+  messageId   String
+  userId      String
+  status      MessageStatusType @default(SENT)
+  deliveredAt DateTime?
+  readAt      DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@map("message_receipts")
 }

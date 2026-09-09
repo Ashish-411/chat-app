@@ -400,7 +400,8 @@ export const ModelName = {
   User: 'User',
   Conversation: 'Conversation',
   Participant: 'Participant',
-  Message: 'Message'
+  Message: 'Message',
+  MessageReceipt: 'MessageReceipt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -416,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "conversation" | "participant" | "message"
+    modelProps: "user" | "conversation" | "participant" | "message" | "messageReceipt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -716,6 +717,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MessageReceipt: {
+      payload: Prisma.$MessageReceiptPayload<ExtArgs>
+      fields: Prisma.MessageReceiptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MessageReceiptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MessageReceiptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>
+        }
+        findFirst: {
+          args: Prisma.MessageReceiptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MessageReceiptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>
+        }
+        findMany: {
+          args: Prisma.MessageReceiptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>[]
+        }
+        create: {
+          args: Prisma.MessageReceiptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>
+        }
+        createMany: {
+          args: Prisma.MessageReceiptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MessageReceiptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>[]
+        }
+        delete: {
+          args: Prisma.MessageReceiptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>
+        }
+        update: {
+          args: Prisma.MessageReceiptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>
+        }
+        deleteMany: {
+          args: Prisma.MessageReceiptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MessageReceiptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MessageReceiptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>[]
+        }
+        upsert: {
+          args: Prisma.MessageReceiptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MessageReceiptPayload>
+        }
+        aggregate: {
+          args: Prisma.MessageReceiptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMessageReceipt>
+        }
+        groupBy: {
+          args: Prisma.MessageReceiptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessageReceiptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MessageReceiptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MessageReceiptCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -802,6 +877,20 @@ export const MessageScalarFieldEnum = {
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const MessageReceiptScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  status: 'status',
+  deliveredAt: 'deliveredAt',
+  readAt: 'readAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MessageReceiptScalarFieldEnum = (typeof MessageReceiptScalarFieldEnum)[keyof typeof MessageReceiptScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -901,6 +990,20 @@ export type EnumParticipantRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'ParticipantRole[]'
  */
 export type ListEnumParticipantRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ParticipantRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'MessageStatusType'
+ */
+export type EnumMessageStatusTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageStatusType'>
+    
+
+
+/**
+ * Reference to a field of type 'MessageStatusType[]'
+ */
+export type ListEnumMessageStatusTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageStatusType[]'>
     
 
 
@@ -1072,6 +1175,7 @@ export type GlobalOmitConfig = {
   conversation?: Prisma.ConversationOmit
   participant?: Prisma.ParticipantOmit
   message?: Prisma.MessageOmit
+  messageReceipt?: Prisma.MessageReceiptOmit
 }
 
 /* Types for Logging */

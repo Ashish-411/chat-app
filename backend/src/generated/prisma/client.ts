@@ -61,3 +61,8 @@ export type Participant = Prisma.ParticipantModel
  * 
  */
 export type Message = Prisma.MessageModel
+/**
+ * Model MessageReceipt
+ * 
+ */
+export type MessageReceipt = Prisma.MessageReceiptModel

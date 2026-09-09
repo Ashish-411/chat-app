@@ -216,6 +216,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   messages?: Prisma.MessageListRelationFilter
   participants?: Prisma.ParticipantListRelationFilter
+  messageReceipts?: Prisma.MessageReceiptListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -230,6 +231,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   messages?: Prisma.MessageOrderByRelationAggregateInput
   participants?: Prisma.ParticipantOrderByRelationAggregateInput
+  messageReceipts?: Prisma.MessageReceiptOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -248,6 +250,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   messages?: Prisma.MessageListRelationFilter
   participants?: Prisma.ParticipantListRelationFilter
+  messageReceipts?: Prisma.MessageReceiptListRelationFilter
 }, "id" | "email" | "provider_providerId">
 
 export type UserOrderByWithAggregationInput = {
@@ -292,6 +295,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
+  messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -306,6 +310,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -320,6 +325,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
+  messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -334,6 +340,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -462,6 +469,20 @@ export type UserUpdateOneRequiredWithoutMessagesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMessagesInput, Prisma.UserUpdateWithoutMessagesInput>, Prisma.UserUncheckedUpdateWithoutMessagesInput>
 }
 
+export type UserCreateNestedOneWithoutMessageReceiptsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMessageReceiptsInput, Prisma.UserUncheckedCreateWithoutMessageReceiptsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMessageReceiptsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutMessageReceiptsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMessageReceiptsInput, Prisma.UserUncheckedCreateWithoutMessageReceiptsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMessageReceiptsInput
+  upsert?: Prisma.UserUpsertWithoutMessageReceiptsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMessageReceiptsInput, Prisma.UserUpdateWithoutMessageReceiptsInput>, Prisma.UserUncheckedUpdateWithoutMessageReceiptsInput>
+}
+
 export type UserCreateWithoutParticipantsInput = {
   id?: string
   email?: string | null
@@ -473,6 +494,7 @@ export type UserCreateWithoutParticipantsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutParticipantsInput = {
@@ -486,6 +508,7 @@ export type UserUncheckedCreateWithoutParticipantsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutParticipantsInput = {
@@ -515,6 +538,7 @@ export type UserUpdateWithoutParticipantsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutParticipantsInput = {
@@ -528,6 +552,7 @@ export type UserUncheckedUpdateWithoutParticipantsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessagesInput = {
@@ -541,6 +566,7 @@ export type UserCreateWithoutMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
+  messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessagesInput = {
@@ -554,6 +580,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessagesInput = {
@@ -583,6 +610,7 @@ export type UserUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
+  messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessagesInput = {
@@ -596,6 +624,79 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutMessageReceiptsInput = {
+  id?: string
+  email?: string | null
+  name?: string | null
+  password?: string | null
+  provider?: $Enums.AuthProvider
+  providerId?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutMessageReceiptsInput = {
+  id?: string
+  email?: string | null
+  name?: string | null
+  password?: string | null
+  provider?: $Enums.AuthProvider
+  providerId?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutMessageReceiptsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMessageReceiptsInput, Prisma.UserUncheckedCreateWithoutMessageReceiptsInput>
+}
+
+export type UserUpsertWithoutMessageReceiptsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMessageReceiptsInput, Prisma.UserUncheckedUpdateWithoutMessageReceiptsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMessageReceiptsInput, Prisma.UserUncheckedCreateWithoutMessageReceiptsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMessageReceiptsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMessageReceiptsInput, Prisma.UserUncheckedUpdateWithoutMessageReceiptsInput>
+}
+
+export type UserUpdateWithoutMessageReceiptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMessageReceiptsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -606,11 +707,13 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
 export type UserCountOutputType = {
   messages: number
   participants: number
+  messageReceipts: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   messages?: boolean | UserCountOutputTypeCountMessagesArgs
   participants?: boolean | UserCountOutputTypeCountParticipantsArgs
+  messageReceipts?: boolean | UserCountOutputTypeCountMessageReceiptsArgs
 }
 
 /**
@@ -637,6 +740,13 @@ export type UserCountOutputTypeCountParticipantsArgs<ExtArgs extends runtime.Typ
   where?: Prisma.ParticipantWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMessageReceiptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageReceiptWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -650,6 +760,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   messages?: boolean | Prisma.User$messagesArgs<ExtArgs>
   participants?: boolean | Prisma.User$participantsArgs<ExtArgs>
+  messageReceipts?: boolean | Prisma.User$messageReceiptsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -693,6 +804,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   messages?: boolean | Prisma.User$messagesArgs<ExtArgs>
   participants?: boolean | Prisma.User$participantsArgs<ExtArgs>
+  messageReceipts?: boolean | Prisma.User$messageReceiptsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -703,6 +815,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     messages: Prisma.$MessagePayload<ExtArgs>[]
     participants: Prisma.$ParticipantPayload<ExtArgs>[]
+    messageReceipts: Prisma.$MessageReceiptPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1110,6 +1223,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   messages<T extends Prisma.User$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   participants<T extends Prisma.User$participantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  messageReceipts<T extends Prisma.User$messageReceiptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$messageReceiptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReceiptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1586,6 +1700,30 @@ export type User$participantsArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.ParticipantScalarFieldEnum | Prisma.ParticipantScalarFieldEnum[]
+}
+
+/**
+ * User.messageReceipts
+ */
+export type User$messageReceiptsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MessageReceipt
+   */
+  select?: Prisma.MessageReceiptSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MessageReceipt
+   */
+  omit?: Prisma.MessageReceiptOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageReceiptInclude<ExtArgs> | null
+  where?: Prisma.MessageReceiptWhereInput
+  orderBy?: Prisma.MessageReceiptOrderByWithRelationInput | Prisma.MessageReceiptOrderByWithRelationInput[]
+  cursor?: Prisma.MessageReceiptWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageReceiptScalarFieldEnum | Prisma.MessageReceiptScalarFieldEnum[]
 }
 
 /**

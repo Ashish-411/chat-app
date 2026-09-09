@@ -32,3 +32,12 @@ export const AuthProvider = {
 } as const
 
 export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]
+
+
+export const MessageStatusType = {
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  READ: 'READ'
+} as const
+
+export type MessageStatusType = (typeof MessageStatusType)[keyof typeof MessageStatusType]

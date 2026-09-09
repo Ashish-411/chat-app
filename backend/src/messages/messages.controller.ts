@@ -37,8 +37,44 @@ export class MessagesController {
     @Query('cursor') cursor?: string,
   ) {
     const parsedLimit = limit ? parseInt(limit, 10) : 50;
-    return this.messagesService.getMessages(user.userId, conversationId, parsedLimit, cursor);
+    return this.messagesService.getMessages(
+      user.userId,
+      conversationId,
+      parsedLimit,
+      cursor,
+    );
   }
+
+  // --- READ / DELIVERY STATUS ---
+
+  @Post('conversations/:conversationId/read')
+  markConversationAsRead(
+    @CurrentUser() user: { userId: string },
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.messagesService.markConversationAsRead(
+      user.userId,
+      conversationId,
+    );
+  }
+
+  @Post('messages/:messageId/delivered')
+  markAsDelivered(
+    @CurrentUser() user: { userId: string },
+    @Param('messageId') messageId: string,
+  ) {
+    return this.messagesService.markAsDelivered(user.userId, messageId);
+  }
+
+  @Get('messages/:messageId/receipts')
+  getMessageReceipts(
+    @CurrentUser() user: { userId: string },
+    @Param('messageId') messageId: string,
+  ) {
+    return this.messagesService.getMessageReceipts(user.userId, messageId);
+  }
+
+  // --- EDIT & DELETE ---
 
   @Patch('messages/:id')
   updateMessage(

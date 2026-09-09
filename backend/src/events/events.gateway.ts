@@ -184,4 +184,99 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isTyping: false,
     });
   }
+    // --- DELIVERY & READ STATUS ---
+
+  @SubscribeMessage('message:delivered')
+  async handleMessageDelivered(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { messageId: string },
+  ) {
+    const userId = client.data.userId as string | undefined;
+    if (!userId || !data?.messageId) return;
+
+    const receipt = await this.prisma.messageReceipt.findUnique({
+      where: {
+        messageId_userId: { messageId: data.messageId, userId },
+      },
+    });
+
+    if (!receipt || receipt.status === 'READ') return;
+
+    await this.prisma.messageReceipt.update({
+      where: {
+        messageId_userId: { messageId: data.messageId, userId },
+      },
+      data: {
+        status: 'DELIVERED' as any,
+        deliveredAt: new Date(),
+      },
+    });
+
+    // Notify the sender
+    const message = await this.prisma.message.findUnique({
+      where: { id: data.messageId },
+      select: { conversationId: true, senderId: true },
+    });
+
+    if (message) {
+      this.server.to(`user:${message.senderId}`).emit('message:status-update', {
+        messageId: data.messageId,
+        conversationId: message.conversationId,
+        userId,
+        status: 'DELIVERED',
+        deliveredAt: new Date(),
+      });
+    }
+  }
+
+  @SubscribeMessage('conversation:read')
+  async handleConversationRead(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { conversationId: string },
+  ) {
+    const userId = client.data.userId as string | undefined;
+    if (!userId || !data?.conversationId) return;
+
+    // Check participant
+    const participant = await this.prisma.participant.findFirst({
+      where: { userId, conversationId: data.conversationId },
+    });
+
+    if (!participant) return;
+
+    // Update all unread receipts
+    await this.prisma.messageReceipt.updateMany({
+      where: {
+        userId,
+        status: { not: 'READ' as any },
+        message: {
+          conversationId: data.conversationId,
+          senderId: { not: userId },
+        },
+      },
+      data: {
+        status: 'READ' as any,
+        readAt: new Date(),
+      },
+    });
+
+    // Notify all senders in this conversation
+    const senders = await this.prisma.message.findMany({
+      where: {
+        conversationId: data.conversationId,
+        senderId: { not: userId },
+      },
+      select: { senderId: true },
+      distinct: ['senderId'],
+    });
+
+    for (const sender of senders) {
+      this.server.to(`user:${sender.senderId}`).emit('message:status-update', {
+        conversationId: data.conversationId,
+        userId,
+        status: 'READ',
+        readAt: new Date(),
+      });
+    }
+  }
 }
