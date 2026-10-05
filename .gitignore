@@ -118,3 +118,5 @@ desktop.ini
 .env
 .env.*
 !.env.example
+
+uploads/

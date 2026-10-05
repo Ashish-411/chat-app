@@ -35,7 +35,7 @@ export class MessagesService {
     return participant;
   }
 
-  async sendMessage(
+    async sendMessage(
     userId: string,
     conversationId: string,
     dto: CreateMessageDto,
@@ -46,6 +46,7 @@ export class MessagesService {
       const createdMessage = await tx.message.create({
         data: {
           content: dto.content,
+          type: dto.type ?? 'TEXT', // (Default to TEXT if not provided)
           senderId: userId,
           conversationId,
         },
@@ -53,6 +54,8 @@ export class MessagesService {
           sender: { select: publicUserSelect },
         },
       });
+
+      // ... rest of the method (receipts, conversation update) remains the same ...
 
       // Get all OTHER participants (not the sender)
       const otherParticipants = await tx.participant.findMany({
