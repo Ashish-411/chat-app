@@ -29,6 +29,12 @@ enum MessageStatusType {
   READ
 }
 
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+}
+
 model User {
   id         String       @id @default(cuid())
   email      String?      @unique
@@ -80,6 +86,7 @@ model Participant {
 model Message {
   id             String   @id @default(cuid())
   content        String
+  type           MessageType
   senderId       String
   conversationId String
   createdAt      DateTime @default(now())
