@@ -49,7 +49,9 @@ model User {
 
   messages     Message[]
   participants Participant[]
-  messageReceipts MessageReceipt[]  
+  messageReceipts MessageReceipt[] 
+  pushSubscriptions PushSubscription[]
+ 
 
 
   @@unique([provider, providerId])
@@ -117,4 +119,16 @@ model MessageReceipt {
 
   @@unique([messageId, userId])
   @@map("message_receipts")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  keys      Json
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
 }
