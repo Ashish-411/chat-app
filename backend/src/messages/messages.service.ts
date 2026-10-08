@@ -7,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateMessageDto } from './dto/create-message.dto.js';
 import { UpdateMessageDto } from './dto/update-message.dto.js';
 import { EventsGateway } from '../events/events.gateway.js';
-
+import { NotificationsService } from '../notifications/notifications.service.js';
 const publicUserSelect = {
   id: true,
   name: true,
@@ -19,6 +19,7 @@ export class MessagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventsGateway,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private async ensureParticipant(userId: string, conversationId: string) {
@@ -104,6 +105,28 @@ export class MessagesService {
       .to(`conversation:${conversationId}`)
       .emit('message:new', messageWithReceipts);
 
+        // Send push notifications to all other participants
+    const otherParticipants = await this.prisma.participant.findMany({
+      where: {
+        conversationId,
+        userId: { not: userId },
+      },
+      select: { userId: true },
+    });
+
+    const sender = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    for (const participant of otherParticipants) {
+      await this.notifications.sendNotificationToUser(participant.userId, {
+        title: sender?.name || 'New Message',
+        body: dto.content,
+        conversationId,
+        type: 'NEW_MESSAGE',
+      });
+    }
     return messageWithReceipts;
   }
 

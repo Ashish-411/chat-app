@@ -66,3 +66,8 @@ export type Message = Prisma.MessageModel
  * 
  */
 export type MessageReceipt = Prisma.MessageReceiptModel
+/**
+ * Model PushSubscription
+ * 
+ */
+export type PushSubscription = Prisma.PushSubscriptionModel

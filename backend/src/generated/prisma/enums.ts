@@ -41,3 +41,12 @@ export const MessageStatusType = {
 } as const
 
 export type MessageStatusType = (typeof MessageStatusType)[keyof typeof MessageStatusType]
+
+
+export const MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  FILE: 'FILE'
+} as const
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType]
