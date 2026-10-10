@@ -10,9 +10,13 @@ export class CreateMessageDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(4000)
-  content: string; // Text content OR Media URL
+  content: string;
 
   @IsOptional()
   @IsEnum(MessageType)
   type?: MessageType;
+
+  @IsOptional()
+  @IsString()
+  replyToId?: string;   
 }

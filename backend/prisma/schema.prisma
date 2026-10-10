@@ -51,7 +51,8 @@ model User {
   participants Participant[]
   messageReceipts MessageReceipt[] 
   pushSubscriptions PushSubscription[]
- 
+  messageReactions  MessageReaction[]   
+
 
 
   @@unique([provider, providerId])
@@ -90,6 +91,7 @@ model Message {
   content        String
   type           MessageType
   senderId       String
+  replyToId      String?
   conversationId String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -97,6 +99,9 @@ model Message {
   sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   receipts     MessageReceipt[] 
+  reactions    MessageReaction[]
+  replyTo      Message?       @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)  
+  replies      Message[]      @relation("MessageReplies")  
 
 
   @@map("messages")
@@ -131,4 +136,17 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("push_subscriptions")
+}
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@map("message_reactions")
 }

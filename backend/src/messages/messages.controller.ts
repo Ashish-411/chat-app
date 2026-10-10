@@ -13,6 +13,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { MessagesService } from './messages.service.js';
 import { CreateMessageDto } from './dto/create-message.dto.js';
 import { UpdateMessageDto } from './dto/update-message.dto.js';
+import { AddReactionDto } from './dto/add-reaction.dto.js';
+import { SearchMessagesDto } from './dto/search-messages.dto.js';
 import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
 
 @Controller()
@@ -43,6 +45,41 @@ export class MessagesController {
       parsedLimit,
       cursor,
     );
+  }
+
+  // --- SEARCH MESSAGES ---
+
+  @Get('conversations/:conversationId/messages/search')
+  searchMessages(
+    @CurrentUser() user: { userId: string },
+    @Param('conversationId') conversationId: string,
+    @Query('q') q: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.messagesService.searchMessages(user.userId, conversationId, {
+      q,
+      cursor,
+    });
+  }
+
+  // --- REACTIONS ---
+
+  @Post('messages/:messageId/reactions')
+  addReaction(
+    @CurrentUser() user: { userId: string },
+    @Param('messageId') messageId: string,
+    @Body() dto: AddReactionDto,
+  ) {
+    return this.messagesService.addReaction(user.userId, messageId, dto);
+  }
+
+  @Delete('messages/:messageId/reactions/:emoji')
+  removeReaction(
+    @CurrentUser() user: { userId: string },
+    @Param('messageId') messageId: string,
+    @Param('emoji') emoji: string,
+  ) {
+    return this.messagesService.removeReaction(user.userId, messageId, emoji);
   }
 
   // --- READ / DELIVERY STATUS ---

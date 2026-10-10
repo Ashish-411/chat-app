@@ -218,6 +218,7 @@ export type UserWhereInput = {
   participants?: Prisma.ParticipantListRelationFilter
   messageReceipts?: Prisma.MessageReceiptListRelationFilter
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
+  messageReactions?: Prisma.MessageReactionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -234,6 +235,7 @@ export type UserOrderByWithRelationInput = {
   participants?: Prisma.ParticipantOrderByRelationAggregateInput
   messageReceipts?: Prisma.MessageReceiptOrderByRelationAggregateInput
   pushSubscriptions?: Prisma.PushSubscriptionOrderByRelationAggregateInput
+  messageReactions?: Prisma.MessageReactionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -254,6 +256,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   participants?: Prisma.ParticipantListRelationFilter
   messageReceipts?: Prisma.MessageReceiptListRelationFilter
   pushSubscriptions?: Prisma.PushSubscriptionListRelationFilter
+  messageReactions?: Prisma.MessageReactionListRelationFilter
 }, "id" | "email" | "provider_providerId">
 
 export type UserOrderByWithAggregationInput = {
@@ -300,6 +303,7 @@ export type UserCreateInput = {
   participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
   messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -316,6 +320,7 @@ export type UserUncheckedCreateInput = {
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
   messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -332,6 +337,7 @@ export type UserUpdateInput = {
   participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
   messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -348,6 +354,7 @@ export type UserUncheckedUpdateInput = {
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
   messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -504,6 +511,20 @@ export type UserUpdateOneRequiredWithoutPushSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPushSubscriptionsInput, Prisma.UserUpdateWithoutPushSubscriptionsInput>, Prisma.UserUncheckedUpdateWithoutPushSubscriptionsInput>
 }
 
+export type UserCreateNestedOneWithoutMessageReactionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMessageReactionsInput, Prisma.UserUncheckedCreateWithoutMessageReactionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMessageReactionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutMessageReactionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMessageReactionsInput, Prisma.UserUncheckedCreateWithoutMessageReactionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMessageReactionsInput
+  upsert?: Prisma.UserUpsertWithoutMessageReactionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMessageReactionsInput, Prisma.UserUpdateWithoutMessageReactionsInput>, Prisma.UserUncheckedUpdateWithoutMessageReactionsInput>
+}
+
 export type UserCreateWithoutParticipantsInput = {
   id?: string
   email?: string | null
@@ -517,6 +538,7 @@ export type UserCreateWithoutParticipantsInput = {
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutParticipantsInput = {
@@ -532,6 +554,7 @@ export type UserUncheckedCreateWithoutParticipantsInput = {
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutParticipantsInput = {
@@ -563,6 +586,7 @@ export type UserUpdateWithoutParticipantsInput = {
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutParticipantsInput = {
@@ -578,6 +602,7 @@ export type UserUncheckedUpdateWithoutParticipantsInput = {
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessagesInput = {
@@ -593,6 +618,7 @@ export type UserCreateWithoutMessagesInput = {
   participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
   messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessagesInput = {
@@ -608,6 +634,7 @@ export type UserUncheckedCreateWithoutMessagesInput = {
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
   messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessagesInput = {
@@ -639,6 +666,7 @@ export type UserUpdateWithoutMessagesInput = {
   participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
   messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessagesInput = {
@@ -654,6 +682,7 @@ export type UserUncheckedUpdateWithoutMessagesInput = {
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
   messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMessageReceiptsInput = {
@@ -669,6 +698,7 @@ export type UserCreateWithoutMessageReceiptsInput = {
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMessageReceiptsInput = {
@@ -684,6 +714,7 @@ export type UserUncheckedCreateWithoutMessageReceiptsInput = {
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMessageReceiptsInput = {
@@ -715,6 +746,7 @@ export type UserUpdateWithoutMessageReceiptsInput = {
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMessageReceiptsInput = {
@@ -730,6 +762,7 @@ export type UserUncheckedUpdateWithoutMessageReceiptsInput = {
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
   pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPushSubscriptionsInput = {
@@ -745,6 +778,7 @@ export type UserCreateWithoutPushSubscriptionsInput = {
   messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
   messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
@@ -760,6 +794,7 @@ export type UserUncheckedCreateWithoutPushSubscriptionsInput = {
   messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
   messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
+  messageReactions?: Prisma.MessageReactionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPushSubscriptionsInput = {
@@ -791,6 +826,7 @@ export type UserUpdateWithoutPushSubscriptionsInput = {
   messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
   messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
@@ -806,6 +842,87 @@ export type UserUncheckedUpdateWithoutPushSubscriptionsInput = {
   messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
   messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
+  messageReactions?: Prisma.MessageReactionUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutMessageReactionsInput = {
+  id?: string
+  email?: string | null
+  name?: string | null
+  password?: string | null
+  provider?: $Enums.AuthProvider
+  providerId?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  participants?: Prisma.ParticipantCreateNestedManyWithoutUserInput
+  messageReceipts?: Prisma.MessageReceiptCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutMessageReactionsInput = {
+  id?: string
+  email?: string | null
+  name?: string | null
+  password?: string | null
+  provider?: $Enums.AuthProvider
+  providerId?: string | null
+  avatarUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  participants?: Prisma.ParticipantUncheckedCreateNestedManyWithoutUserInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedCreateNestedManyWithoutUserInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutMessageReactionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMessageReactionsInput, Prisma.UserUncheckedCreateWithoutMessageReactionsInput>
+}
+
+export type UserUpsertWithoutMessageReactionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMessageReactionsInput, Prisma.UserUncheckedUpdateWithoutMessageReactionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMessageReactionsInput, Prisma.UserUncheckedCreateWithoutMessageReactionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMessageReactionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMessageReactionsInput, Prisma.UserUncheckedUpdateWithoutMessageReactionsInput>
+}
+
+export type UserUpdateWithoutMessageReactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  participants?: Prisma.ParticipantUpdateManyWithoutUserNestedInput
+  messageReceipts?: Prisma.MessageReceiptUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMessageReactionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  provider?: Prisma.EnumAuthProviderFieldUpdateOperationsInput | $Enums.AuthProvider
+  providerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  participants?: Prisma.ParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messageReceipts?: Prisma.MessageReceiptUncheckedUpdateManyWithoutUserNestedInput
+  pushSubscriptions?: Prisma.PushSubscriptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -818,6 +935,7 @@ export type UserCountOutputType = {
   participants: number
   messageReceipts: number
   pushSubscriptions: number
+  messageReactions: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -825,6 +943,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   participants?: boolean | UserCountOutputTypeCountParticipantsArgs
   messageReceipts?: boolean | UserCountOutputTypeCountMessageReceiptsArgs
   pushSubscriptions?: boolean | UserCountOutputTypeCountPushSubscriptionsArgs
+  messageReactions?: boolean | UserCountOutputTypeCountMessageReactionsArgs
 }
 
 /**
@@ -865,6 +984,13 @@ export type UserCountOutputTypeCountPushSubscriptionsArgs<ExtArgs extends runtim
   where?: Prisma.PushSubscriptionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMessageReactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageReactionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -880,6 +1006,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   participants?: boolean | Prisma.User$participantsArgs<ExtArgs>
   messageReceipts?: boolean | Prisma.User$messageReceiptsArgs<ExtArgs>
   pushSubscriptions?: boolean | Prisma.User$pushSubscriptionsArgs<ExtArgs>
+  messageReactions?: boolean | Prisma.User$messageReactionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -925,6 +1052,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   participants?: boolean | Prisma.User$participantsArgs<ExtArgs>
   messageReceipts?: boolean | Prisma.User$messageReceiptsArgs<ExtArgs>
   pushSubscriptions?: boolean | Prisma.User$pushSubscriptionsArgs<ExtArgs>
+  messageReactions?: boolean | Prisma.User$messageReactionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -937,6 +1065,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     participants: Prisma.$ParticipantPayload<ExtArgs>[]
     messageReceipts: Prisma.$MessageReceiptPayload<ExtArgs>[]
     pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
+    messageReactions: Prisma.$MessageReactionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1346,6 +1475,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   participants<T extends Prisma.User$participantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$participantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   messageReceipts<T extends Prisma.User$messageReceiptsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$messageReceiptsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReceiptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pushSubscriptions<T extends Prisma.User$pushSubscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$pushSubscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PushSubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  messageReactions<T extends Prisma.User$messageReactionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$messageReactionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessageReactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1870,6 +2000,30 @@ export type User$pushSubscriptionsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.PushSubscriptionScalarFieldEnum | Prisma.PushSubscriptionScalarFieldEnum[]
+}
+
+/**
+ * User.messageReactions
+ */
+export type User$messageReactionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MessageReaction
+   */
+  select?: Prisma.MessageReactionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MessageReaction
+   */
+  omit?: Prisma.MessageReactionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageReactionInclude<ExtArgs> | null
+  where?: Prisma.MessageReactionWhereInput
+  orderBy?: Prisma.MessageReactionOrderByWithRelationInput | Prisma.MessageReactionOrderByWithRelationInput[]
+  cursor?: Prisma.MessageReactionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageReactionScalarFieldEnum | Prisma.MessageReactionScalarFieldEnum[]
 }
 
 /**

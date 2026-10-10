@@ -56,7 +56,8 @@ export const ModelName = {
   Participant: 'Participant',
   Message: 'Message',
   MessageReceipt: 'MessageReceipt',
-  PushSubscription: 'PushSubscription'
+  PushSubscription: 'PushSubscription',
+  MessageReaction: 'MessageReaction'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -117,6 +118,7 @@ export const MessageScalarFieldEnum = {
   content: 'content',
   type: 'type',
   senderId: 'senderId',
+  replyToId: 'replyToId',
   conversationId: 'conversationId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -148,6 +150,17 @@ export const PushSubscriptionScalarFieldEnum = {
 } as const
 
 export type PushSubscriptionScalarFieldEnum = (typeof PushSubscriptionScalarFieldEnum)[keyof typeof PushSubscriptionScalarFieldEnum]
+
+
+export const MessageReactionScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  emoji: 'emoji',
+  createdAt: 'createdAt'
+} as const
+
+export type MessageReactionScalarFieldEnum = (typeof MessageReactionScalarFieldEnum)[keyof typeof MessageReactionScalarFieldEnum]
 
 
 export const SortOrder = {

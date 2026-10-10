@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -6,13 +7,42 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateMessageDto } from './dto/create-message.dto.js';
 import { UpdateMessageDto } from './dto/update-message.dto.js';
+import { AddReactionDto } from './dto/add-reaction.dto.js';
+import { SearchMessagesDto } from './dto/search-messages.dto.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+
 const publicUserSelect = {
   id: true,
   name: true,
   avatarUrl: true,
 } as const;
+
+const reactionInclude = {
+  reactions: {
+    select: {
+      id: true,
+      emoji: true,
+      userId: true,
+      user: {
+        select: publicUserSelect,
+      },
+    },
+  },
+};
+
+const replyInclude = {
+  replyTo: {
+    select: {
+      id: true,
+      content: true,
+      type: true,
+      sender: {
+        select: publicUserSelect,
+      },
+    },
+  },
+};
 
 @Injectable()
 export class MessagesService {
@@ -36,27 +66,42 @@ export class MessagesService {
     return participant;
   }
 
-    async sendMessage(
+  async sendMessage(
     userId: string,
     conversationId: string,
     dto: CreateMessageDto,
   ) {
     await this.ensureParticipant(userId, conversationId);
 
+    // If this is a reply, verify the original message exists in this conversation
+    if (dto.replyToId) {
+      const originalMessage = await this.prisma.message.findFirst({
+        where: {
+          id: dto.replyToId,
+          conversationId,
+        },
+      });
+
+      if (!originalMessage) {
+        throw new NotFoundException('The message you are replying to was not found');
+      }
+    }
+
     const message = await this.prisma.$transaction(async tx => {
       const createdMessage = await tx.message.create({
         data: {
           content: dto.content,
-          type: dto.type ?? 'TEXT', // (Default to TEXT if not provided)
+          type: dto.type ?? 'TEXT',
           senderId: userId,
           conversationId,
+          replyToId: dto.replyToId,
         },
         include: {
           sender: { select: publicUserSelect },
+          ...reactionInclude,
+          ...replyInclude,
         },
       });
-
-      // ... rest of the method (receipts, conversation update) remains the same ...
 
       // Get all OTHER participants (not the sender)
       const otherParticipants = await tx.participant.findMany({
@@ -105,7 +150,7 @@ export class MessagesService {
       .to(`conversation:${conversationId}`)
       .emit('message:new', messageWithReceipts);
 
-        // Send push notifications to all other participants
+    // Send push notifications to all other participants
     const otherParticipants = await this.prisma.participant.findMany({
       where: {
         conversationId,
@@ -127,6 +172,7 @@ export class MessagesService {
         type: 'NEW_MESSAGE',
       });
     }
+
     return messageWithReceipts;
   }
 
@@ -146,6 +192,8 @@ export class MessagesService {
       orderBy: { createdAt: 'desc' },
       include: {
         sender: { select: publicUserSelect },
+        ...reactionInclude,
+        ...replyInclude,
         receipts: {
           select: {
             userId: true,
@@ -170,7 +218,153 @@ export class MessagesService {
     };
   }
 
-  // --- DELIVERY & READ STATUS ---
+  // --- SEARCH MESSAGES ---
+
+  async searchMessages(
+    userId: string,
+    conversationId: string,
+    dto: SearchMessagesDto,
+    limit: number = 50,
+  ) {
+    await this.ensureParticipant(userId, conversationId);
+
+    if (!dto.q || dto.q.trim().length === 0) {
+      return { data: [], nextCursor: undefined };
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: {
+        conversationId,
+        content: {
+          contains: dto.q,
+          mode: 'insensitive',
+        },
+      },
+      take: limit + 1,
+      cursor: dto.cursor ? { id: dto.cursor } : undefined,
+      skip: dto.cursor ? 1 : 0,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sender: { select: publicUserSelect },
+        ...reactionInclude,
+        ...replyInclude,
+      },
+    });
+
+    let nextCursor: string | undefined = undefined;
+
+    if (messages.length > limit) {
+      const nextItem = messages.pop();
+      nextCursor = nextItem?.id;
+    }
+
+    return {
+      data: messages,
+      nextCursor,
+    };
+  }
+
+  // --- REACTIONS ---
+
+  async addReaction(userId: string, messageId: string, dto: AddReactionDto) {
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      select: { conversationId: true },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    await this.ensureParticipant(userId, message.conversationId);
+
+    // Check if reaction already exists
+    const existing = await this.prisma.messageReaction.findUnique({
+      where: {
+        messageId_userId_emoji: {
+          messageId,
+          userId,
+          emoji: dto.emoji,
+        },
+      },
+    });
+
+    if (existing) {
+      throw new BadRequestException('You already reacted with this emoji');
+    }
+
+    const reaction = await this.prisma.messageReaction.create({
+      data: {
+        messageId,
+        userId,
+        emoji: dto.emoji,
+      },
+      include: {
+        user: { select: publicUserSelect },
+      },
+    });
+
+    // Broadcast the reaction
+    this.events.server
+      .to(`conversation:${message.conversationId}`)
+      .emit('message:reaction-added', {
+        messageId,
+        conversationId: message.conversationId,
+        reaction: {
+          id: reaction.id,
+          emoji: reaction.emoji,
+          userId: reaction.userId,
+          user: reaction.user,
+        },
+      });
+
+    return reaction;
+  }
+
+  async removeReaction(userId: string, messageId: string, emoji: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      select: { conversationId: true },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    await this.ensureParticipant(userId, message.conversationId);
+
+    const reaction = await this.prisma.messageReaction.findUnique({
+      where: {
+        messageId_userId_emoji: {
+          messageId,
+          userId,
+          emoji,
+        },
+      },
+    });
+
+    if (!reaction) {
+      throw new NotFoundException('Reaction not found');
+    }
+
+    await this.prisma.messageReaction.delete({
+      where: { id: reaction.id },
+    });
+
+    // Broadcast the reaction removal
+    this.events.server
+      .to(`conversation:${message.conversationId}`)
+      .emit('message:reaction-removed', {
+        messageId,
+        conversationId: message.conversationId,
+        userId,
+        emoji,
+      });
+
+    return { success: true, message: 'Reaction removed' };
+  }
+
+  // --- DELIVERY & READ STATUS (existing methods) ---
 
   async markAsDelivered(userId: string, messageId: string) {
     const receipt = await this.prisma.messageReceipt.findUnique({
@@ -180,7 +374,7 @@ export class MessagesService {
     });
 
     if (!receipt || receipt.status === 'READ') {
-      return; // Already delivered or read, skip
+      return;
     }
 
     const updated = await this.prisma.messageReceipt.update({
@@ -193,21 +387,19 @@ export class MessagesService {
       },
     });
 
-    // Get the message to find the conversation
     const message = await this.prisma.message.findUnique({
       where: { id: messageId },
       select: { conversationId: true, senderId: true },
     });
 
     if (message) {
-      // Notify the sender about the status change
       this.events.server
         .to(`user:${message.senderId}`)
         .emit('message:status-update', {
           messageId,
           conversationId: message.conversationId,
           userId,
-          status: 'DELIVERED',
+                    status: 'DELIVERED',
           deliveredAt: updated.deliveredAt,
         });
     }
@@ -218,14 +410,13 @@ export class MessagesService {
   async markConversationAsRead(userId: string, conversationId: string) {
     await this.ensureParticipant(userId, conversationId);
 
-    // Update all receipts for this user in this conversation to READ
     const updatedReceipts = await this.prisma.messageReceipt.updateMany({
       where: {
         userId,
         status: { not: 'READ' as any },
         message: {
           conversationId,
-          senderId: { not: userId }, // Don't mark own messages
+          senderId: { not: userId },
         },
       },
       data: {
@@ -234,7 +425,6 @@ export class MessagesService {
       },
     });
 
-    // Get all message IDs that were updated to notify senders
     const affectedMessages = await this.prisma.messageReceipt.findMany({
       where: {
         userId,
@@ -251,7 +441,6 @@ export class MessagesService {
       },
     });
 
-    // Group by sender to notify each sender
     const senderIds = [...new Set(affectedMessages.map(r => r.message.senderId))];
 
     for (const senderId of senderIds) {
@@ -299,7 +488,7 @@ export class MessagesService {
     });
   }
 
-  // --- EDIT & DELETE (unchanged) ---
+  // --- EDIT & DELETE ---
 
   async updateMessage(
     userId: string,
@@ -319,6 +508,8 @@ export class MessagesService {
       data: { content: dto.content },
       include: {
         sender: { select: publicUserSelect },
+        ...reactionInclude,
+        ...replyInclude,
         receipts: {
           select: { userId: true, status: true, deliveredAt: true, readAt: true },
         },
