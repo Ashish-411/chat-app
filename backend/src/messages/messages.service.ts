@@ -11,6 +11,8 @@ import { AddReactionDto } from './dto/add-reaction.dto.js';
 import { SearchMessagesDto } from './dto/search-messages.dto.js';
 import { EventsGateway } from '../events/events.gateway.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { ChatbotService } from '../chatbot/chatbot.service.js';
+
 
 const publicUserSelect = {
   id: true,
@@ -50,6 +52,7 @@ export class MessagesService {
     private readonly prisma: PrismaService,
     private readonly events: EventsGateway,
     private readonly notifications: NotificationsService,
+    private readonly chatbot: ChatbotService,
   ) {}
 
   private async ensureParticipant(userId: string, conversationId: string) {
@@ -172,8 +175,29 @@ export class MessagesService {
         type: 'NEW_MESSAGE',
       });
     }
+         // --- TRIGGER CHATBOT ---
+     const botId = process.env.BOT_USER_ID;
+     if (botId) {
+       // Check if this is a DM conversation with the bot
+       const conversation = await this.prisma.conversation.findUnique({
+         where: { id: conversationId },
+         include: { participants: true },
+       });
 
-    return messageWithReceipts;
+       if (
+         conversation?.type === 'DM' &&
+         conversation.participants.length === 2 &&
+         conversation.participants.some(p => p.userId === botId) &&
+         userId !== botId // Prevent bot from replying to itself
+       ) {
+         // Trigger bot asynchronously so it doesn't block the HTTP response
+         this.chatbot.handleBotReply(conversationId, dto.content).catch(err => 
+           console.error('Bot error:', err)
+         );
+       }
+     }
+
+     return messageWithReceipts;
   }
 
   async getMessages(

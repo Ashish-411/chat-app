@@ -12,6 +12,7 @@ import { MessagesModule } from './messages/messages.module.js';
 import { EventsModule } from './events/events.module.js';
 import { UploadModule } from './upload/upload.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { ChatbotModule } from './chatbot/chatbot.module.js';
 
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
@@ -36,6 +37,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     EventsModule,
     UploadModule,
     NotificationsModule,
+    ChatbotModule,
   ],
   controllers: [AppController],
   providers: [AppService],
