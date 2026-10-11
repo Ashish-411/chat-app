@@ -51,7 +51,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     try {
       const token = client.handshake.auth?.token as string | undefined;
-
       if (!token) {
         client.emit('connection:error', { message: 'Authentication token missing' });
         client.disconnect(true);
