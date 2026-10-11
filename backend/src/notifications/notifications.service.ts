@@ -1,20 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import * as webpush from 'web-push';
+import * as webpushImport from 'web-push';
+
+// Handle CommonJS / ESM interop safely
+const webpush = (webpushImport as any).default || webpushImport;
 
 @Injectable()
 export class NotificationsService {
   constructor(private readonly prisma: PrismaService) {
-    // Configure VAPID details
+    // Now webpush.setVapidDetails will work perfectly!
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT!,
+      process.env.VAPID_SUBJECT || 'mailto:admin@yourchatapp.com',
       process.env.VAPID_PUBLIC_KEY!,
       process.env.VAPID_PRIVATE_KEY!,
     );
   }
 
   async subscribe(userId: string, subscription: any) {
-    // Store the subscription
     return this.prisma.pushSubscription.upsert({
       where: { endpoint: subscription.endpoint },
       update: { keys: subscription.keys },
@@ -39,19 +41,20 @@ export class NotificationsService {
 
     const notificationString = JSON.stringify(payload);
 
-    // Send to all devices for this user
     const promises = subscriptions.map((sub) => {
       const pushSubscription = {
         endpoint: sub.endpoint,
         keys: sub.keys as any,
       };
-      return webpush.sendNotification(pushSubscription, notificationString).catch(err => {
-        // If subscription is expired/invalid, remove it
+      
+      return webpush.sendNotification(pushSubscription, notificationString).catch((err: any) => {
+        // If subscription is expired/invalid, remove it from DB
         if (err.statusCode === 410 || err.statusCode === 404) {
           return this.prisma.pushSubscription.delete({
             where: { endpoint: sub.endpoint },
           });
         }
+        console.error('Push notification error:', err.message);
       });
     });
 

@@ -7,14 +7,27 @@ import { connectSocket } from "@/lib/socket";
 import api from '@/lib/api';
 import { ro } from "date-fns/locale";
 
+const AUTH_PATHS = ['/login','/signup'];
+
 export function AuthHydrator({children}: {children: React.ReactNode}){
-    const {setAuth, logout} = useAuthStore();
+    const {user, setAuth, logout} = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
     const [isHydrated, setIsHydrated] = useState(false);
 
-
+    const isAuthPage = AUTH_PATHS.some(
+        (path) => pathname === path || pathname.startsWith(`${path}/`)
+      );
     useEffect(() =>{
+        if (isAuthPage) {
+          // If already logged in, send them straight to chat
+          if (user) {
+            router.replace('/chat');
+            return;
+          }
+          setIsHydrated(true);
+          return;
+        }
         const hydrate = async() =>{
             try{
                 const refreshRes = await api.post('/auth/refresh');
@@ -31,7 +44,7 @@ export function AuthHydrator({children}: {children: React.ReactNode}){
         };
 
         hydrate();
-    },[setAuth,logout,router,pathname]);
+    },[isAuthPage]);
 
     if (!isHydrated) {
     return (
