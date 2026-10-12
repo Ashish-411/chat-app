@@ -23,7 +23,7 @@ export default function LoginPage(){
         try{
             const response = await api.post("/auth/login", {email,password});
             const {user, accessToken} = response.data;
-
+            console.log(user,accessToken);
             setAuth(user,accessToken);
             connectSocket();
             router.push('/chat');
