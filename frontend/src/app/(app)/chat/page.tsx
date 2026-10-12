@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Sidebar from '@/components/sidebar/Sidebar';
 import ChatWindow from '@/components/chat/ChatWindow';
@@ -12,10 +12,12 @@ export default function ChatPage() {
   // Mobile: show sidebar OR chat. Desktop: show both.
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
 
-  const handleSelectConversation = (id: string) => {
-    setActiveConversation(id);
-    setShowMobileSidebar(false); // On mobile, switch to chat view
-  };
+  // ✅ FIX: When a conversation is selected, hide sidebar on mobile
+  useEffect(() => {
+    if (activeConversationId) {
+      setShowMobileSidebar(false);
+    }
+  }, [activeConversationId]);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -35,14 +37,13 @@ export default function ChatPage() {
         } md:flex flex-1 flex-col relative`}
       >
         {/* Mobile back button */}
-        {activeConversationId && (
-          <button
-            onClick={() => setShowMobileSidebar(true)}
-            className="md:hidden absolute top-3 left-3 z-10 p-2 rounded-full bg-white shadow-md"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
-          </button>
-        )}
+        <button
+          onClick={() => setShowMobileSidebar(true)}
+          className="md:hidden absolute top-3 left-3 z-10 p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
+        </button>
+
         <ChatWindow />
       </div>
     </div>
