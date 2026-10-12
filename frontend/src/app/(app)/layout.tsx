@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import RealtimeSync from '@/components/RealtimeSync';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
@@ -22,5 +23,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {/* ✅ Global real-time sync runs for all authenticated pages */}
+      <RealtimeSync />
+      {children}
+    </>
+  );
 }

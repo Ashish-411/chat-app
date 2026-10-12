@@ -48,11 +48,22 @@ interface MessageState {
   nextCursor: string | null;
   isLoading: boolean;
   hasMore: boolean;
+
+  // Typing state: userId -> isTyping
+  typingUsers: Record<string, boolean>;
+
   setMessages: (messages: Message[], nextCursor: string | null) => void;
   addMessage: (message: Message) => void;
   updateMessage: (message: Message) => void;
   removeMessage: (messageId: string) => void;
   clearMessages: () => void;
+
+  setTyping: (userId: string, isTyping: boolean) => void;
+  clearTyping: () => void;
+
+  updateReceipt: (messageId: string, userId: string, status: 'SENT' | 'DELIVERED' | 'READ') => void;
+  updateAllReceipts: (conversationId: string, userId: string, status: 'READ') => void;
+
   fetchMessages: (conversationId: string, cursor?: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string, replyToId?: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
@@ -64,13 +75,13 @@ export const useMessageStore = create<MessageState>((set, get) => ({
   nextCursor: null,
   isLoading: false,
   hasMore: true,
+  typingUsers: {},
 
   setMessages: (messages, nextCursor) =>
     set({ messages, nextCursor, hasMore: nextCursor !== null }),
 
   addMessage: (message) =>
     set((state) => {
-      // Avoid duplicates
       if (state.messages.find((m) => m.id === message.id)) {
         return state;
       }
@@ -89,7 +100,52 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       messages: state.messages.filter((m) => m.id !== messageId),
     })),
 
-  clearMessages: () => set({ messages: [], nextCursor: null, hasMore: true }),
+  clearMessages: () => set({ messages: [], nextCursor: null, hasMore: true, typingUsers: {} }),
+
+  setTyping: (userId, isTyping) =>
+    set((state) => ({
+      typingUsers: { ...state.typingUsers, [userId]: isTyping },
+    })),
+
+  clearTyping: () => set({ typingUsers: {} }),
+
+  updateReceipt: (messageId, userId, status) =>
+    set((state) => ({
+      messages: state.messages.map((m) => {
+        if (m.id !== messageId) return m;
+        const existingReceipt = m.receipts.find((r) => r.userId === userId);
+        if (existingReceipt) {
+          return {
+            ...m,
+            receipts: m.receipts.map((r) =>
+              r.userId === userId ? { ...r, status } : r
+            ),
+          };
+        }
+        return {
+          ...m,
+          receipts: [...m.receipts, { userId, status, deliveredAt: null, readAt: null }],
+        };
+      }),
+    })),
+
+  updateAllReceipts: (conversationId, userId, status) =>
+    set((state) => ({
+      messages: state.messages.map((m) => {
+        if (m.conversationId !== conversationId) return m;
+        if (m.senderId === userId) return m; // Don't update own messages
+        const existingReceipt = m.receipts.find((r) => r.userId === userId);
+        if (existingReceipt) {
+          return {
+            ...m,
+            receipts: m.receipts.map((r) =>
+              r.userId === userId ? { ...r, status } : r
+            ),
+          };
+        }
+        return m;
+      }),
+    })),
 
   fetchMessages: async (conversationId, cursor) => {
     set({ isLoading: true });
@@ -105,14 +161,12 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       const { data, nextCursor } = response.data;
 
       if (cursor) {
-        // Append older messages at the top
         set((state) => ({
           messages: [...data.reverse(), ...state.messages],
           nextCursor,
           hasMore: nextCursor !== null,
         }));
       } else {
-        // Initial load: reverse to show oldest first
         set({
           messages: data.reverse(),
           nextCursor,

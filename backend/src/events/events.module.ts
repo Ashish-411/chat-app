@@ -5,10 +5,13 @@ import { EventsGateway } from './events.gateway.js';
 
 const sevenDaysInSeconds = 7 * 24 * 60 * 60;
 
+const ACCESS_SECRET =
+  process.env.JWT_ACCESS_SECRET ?? process.env.JWT_SECRET!;
+
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET!,
+      secret: ACCESS_SECRET,
       signOptions: {
         expiresIn: Number(
           process.env.JWT_EXPIRES_IN_SECONDS ?? sevenDaysInSeconds,

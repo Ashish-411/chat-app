@@ -9,15 +9,19 @@ import { useConversationStore } from '@/store/useConversationStore';
 export default function ChatPage() {
   const { activeConversationId, setActiveConversation } = useConversationStore();
 
-  // Mobile: show sidebar OR chat. Desktop: show both.
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
 
-  // ✅ FIX: When a conversation is selected, hide sidebar on mobile
+  // When a conversation is selected, hide sidebar on mobile
   useEffect(() => {
     if (activeConversationId) {
       setShowMobileSidebar(false);
     }
   }, [activeConversationId]);
+
+  const handleBack = () => {
+    setShowMobileSidebar(true);
+    setActiveConversation(null); // ✅ Clear so re-clicking triggers the effect
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -38,7 +42,7 @@ export default function ChatPage() {
       >
         {/* Mobile back button */}
         <button
-          onClick={() => setShowMobileSidebar(true)}
+          onClick={handleBack}
           className="md:hidden absolute top-3 left-3 z-10 p-2 rounded-full bg-white shadow-md hover:bg-gray-100 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-gray-700" />

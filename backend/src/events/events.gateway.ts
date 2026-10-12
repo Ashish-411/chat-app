@@ -14,7 +14,8 @@ import { PrismaService } from '../prisma/prisma.service.js';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', 
+    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    credentials: true,
   },
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -49,41 +50,39 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(client: Socket) {
-    try {
-      const token = client.handshake.auth?.token as string | undefined;
-      if (!token) {
-        client.emit('connection:error', { message: 'Authentication token missing' });
-        client.disconnect(true);
-        return;
-      }
-
-      const payload = await this.jwt.verifyAsync<{ sub: string }>(token);
-
-      if (!payload?.sub) {
-        client.emit('connection:error', { message: 'Invalid token payload' });
-        client.disconnect(true);
-        return;
-      }
-
-      const userId = payload.sub;
-      client.data.userId = userId;
-
-      // Join personal room
-      await client.join(`user:${userId}`);
-
-      client.emit('connection:success', { userId, socketId: client.id });
-
-      // Check if this is their FIRST socket (they just came online)
-      const rooms = this.server.sockets.adapter.rooms as Map<string, Set<string>> | undefined;
-      const userRoom = rooms?.get(`user:${userId}`);
-      if (userRoom && userRoom.size === 1) {
-        await this.broadcastPresence(userId, 'online');
-      }
-    } catch {
-      client.emit('connection:error', { message: 'Invalid or expired token' });
+  try {
+    const token = client.handshake.auth?.token as string | undefined;
+    if (!token) {
+      client.emit('connection:error', { message: 'Authentication token missing' });
       client.disconnect(true);
+      return;
     }
+
+    const payload = await this.jwt.verifyAsync<{ sub: string; type?: string }>(token);
+    
+    // ✅ Verify it's an access token, not a refresh token
+    if (!payload?.sub || payload.type === 'refresh') {
+      client.emit('connection:error', { message: 'Invalid token type' });
+      client.disconnect(true);
+      return;
+    }
+
+    const userId = payload.sub;
+    client.data.userId = userId;
+
+    await client.join(`user:${userId}`);
+    client.emit('connection:success', { userId, socketId: client.id });
+
+    const rooms = this.server.sockets.adapter.rooms as Map<string, Set<string>> | undefined;
+    const userRoom = rooms?.get(`user:${userId}`);
+    if (userRoom && userRoom.size === 1) {
+      await this.broadcastPresence(userId, 'online');
+    }
+  } catch {
+    client.emit('connection:error', { message: 'Invalid or expired token' });
+    client.disconnect(true);
   }
+}
 
   async handleDisconnect(client: Socket) {
     const userId = client.data.userId as string | undefined;

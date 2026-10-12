@@ -11,12 +11,11 @@ interface ConversationItemProps {
 
 export default function ConversationItem({ conversation }: ConversationItemProps) {
   const { user } = useAuthStore();
-  const { activeConversationId, setActiveConversation } = useConversationStore();
+  const { activeConversationId, setActiveConversation, presenceMap } =
+    useConversationStore();
 
   const isActive = activeConversationId === conversation.id;
 
-  // For DM: show the OTHER user's name/avatar
-  // For GROUP: show the group name
   const otherParticipant = conversation.participants.find(
     (p) => p.userId !== user?.id
   );
@@ -30,6 +29,14 @@ export default function ConversationItem({ conversation }: ConversationItemProps
     conversation.type === 'GROUP'
       ? null
       : otherParticipant?.user?.avatarUrl || null;
+
+  // ✅ Get online status from the global presence map
+  const isOnline =
+    conversation.type === 'GROUP'
+      ? undefined
+      : otherParticipant
+      ? presenceMap[otherParticipant.userId] ?? false
+      : undefined;
 
   const lastMessage = conversation.messages[0];
 
@@ -55,16 +62,10 @@ export default function ConversationItem({ conversation }: ConversationItemProps
           : 'hover:bg-gray-50'
       }`}
     >
-      <Avatar
-        name={displayName}
-        avatarUrl={displayAvatar}
-        size="md"
-      />
+      <Avatar name={displayName} avatarUrl={displayAvatar} size="md" online={isOnline} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className="font-medium text-gray-900 text-sm truncate">
-            {displayName}
-          </span>
+          <span className="font-medium text-gray-900 text-sm truncate">{displayName}</span>
           {lastMessage && (
             <span className="text-xs text-gray-400 ml-2 flex-shrink-0">
               {formatTime(lastMessage.createdAt)}

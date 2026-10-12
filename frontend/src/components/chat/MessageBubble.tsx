@@ -5,6 +5,7 @@ import { MoreHorizontal, Pencil, Trash2, Reply } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useMessageStore, Message } from '@/store/useMessageStore';
 import Avatar from '@/components/Avatar';
+import ReceiptTicks from './ReceiptTicks';
 import { format } from 'date-fns';
 
 interface MessageBubbleProps {
@@ -19,12 +20,10 @@ export default function MessageBubble({ message, onReply }: MessageBubbleProps) 
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
 
-  // ✅ FIX: Ref for the dropdown menu container
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isOwnMessage = message.senderId === user?.id;
 
-  // ✅ FIX: Close menu when clicking anywhere outside
   useEffect(() => {
     if (!showMenu) return;
 
@@ -80,7 +79,7 @@ export default function MessageBubble({ message, onReply }: MessageBubbleProps) 
             </button>
           )}
 
-          {/* ✅ FIX: Dropdown menu wrapped in ref */}
+          {/* Dropdown menu */}
           {showMenu && (
             <div
               ref={menuRef}
@@ -161,13 +160,16 @@ export default function MessageBubble({ message, onReply }: MessageBubbleProps) 
             </div>
           )}
 
-          {/* Timestamp */}
-          <p className={`text-xs text-gray-400 mt-0.5 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
-            {formatTime(message.createdAt)}
-            {message.updatedAt !== message.createdAt && !isEditing && (
-              <span className="ml-1 italic">(edited)</span>
-            )}
-          </p>
+          {/* Timestamp + Receipts */}
+          <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+            <span className="text-xs text-gray-400">
+              {formatTime(message.createdAt)}
+              {message.updatedAt !== message.createdAt && !isEditing && (
+                <span className="ml-1 italic">(edited)</span>
+              )}
+            </span>
+            {isOwnMessage && <ReceiptTicks message={message} />}
+          </div>
 
           {/* Reactions */}
           {message.reactions.length > 0 && (

@@ -1,7 +1,8 @@
+// frontend/src/components/chat/ChatWindow.tsx
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useConversationStore } from '@/store/useConversationStore';
 import { useMessageStore, Message } from '@/store/useMessageStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -10,10 +11,12 @@ import Avatar from '@/components/Avatar';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import SearchMessagesModal from './SearchMessagesModal';
+import TypingIndicator from './TypingIndicator';
 
 export default function ChatWindow() {
-  const { activeConversationId, conversations, setActiveConversation } = useConversationStore();
-  const { messages, isLoading, fetchMessages, clearMessages, addMessage, updateMessage, removeMessage } = useMessageStore();
+  const { activeConversationId, conversations, presenceMap } =
+    useConversationStore();
+  const { messages, isLoading, fetchMessages, clearMessages } = useMessageStore();
   const { user } = useAuthStore();
 
   const [replyTo, setReplyTo] = useState<Message | null>(null);
@@ -23,69 +26,22 @@ export default function ChatWindow() {
 
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
 
-  // Fetch messages when conversation changes
   useEffect(() => {
     if (activeConversationId) {
       clearMessages();
       fetchMessages(activeConversationId);
 
-      // Join socket room
       const socket = getSocket();
-      if (socket) {
-        socket.emit('conversation:join', { conversationId: activeConversationId });
+      if (socket?.connected) {
+        socket.emit('conversation:read', { conversationId: activeConversationId });
       }
     }
-
-    return () => {
-      if (activeConversationId) {
-        const socket = getSocket();
-        if (socket) {
-          socket.emit('conversation:leave', { conversationId: activeConversationId });
-        }
-      }
-    };
   }, [activeConversationId, clearMessages, fetchMessages]);
 
-  // Listen for real-time messages
-  useEffect(() => {
-    const socket = getSocket();
-    if (!socket) return;
-
-    const handleNewMessage = (message: Message) => {
-      if (message.conversationId === activeConversationId) {
-        addMessage(message);
-      }
-    };
-
-    const handleUpdatedMessage = (message: Message) => {
-      if (message.conversationId === activeConversationId) {
-        updateMessage(message);
-      }
-    };
-
-    const handleDeletedMessage = (data: { messageId: string; conversationId: string }) => {
-      if (data.conversationId === activeConversationId) {
-        removeMessage(data.messageId);
-      }
-    };
-
-    socket.on('message:new', handleNewMessage);
-    socket.on('message:updated', handleUpdatedMessage);
-    socket.on('message:deleted', handleDeletedMessage);
-
-    return () => {
-      socket.off('message:new', handleNewMessage);
-      socket.off('message:updated', handleUpdatedMessage);
-      socket.off('message:deleted', handleDeletedMessage);
-    };
-  }, [activeConversationId, addMessage, updateMessage, removeMessage]);
-
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Get display name
   const getDisplayName = () => {
     if (!activeConversation) return '';
     if (activeConversation.type === 'GROUP') {
@@ -105,7 +61,15 @@ export default function ChatWindow() {
     return otherParticipant?.user?.avatarUrl || null;
   };
 
-  // Empty state
+  const isOtherUserOnline = () => {
+    if (!activeConversation || activeConversation.type === 'GROUP') return undefined;
+    const otherParticipant = activeConversation.participants.find(
+      (p) => p.userId !== user?.id
+    );
+    if (!otherParticipant) return undefined;
+    return presenceMap[otherParticipant.userId] ?? false;
+  };
+
   if (!activeConversationId || !activeConversation) {
     return (
       <div className="flex h-full flex-col items-center justify-center bg-gray-50">
@@ -122,22 +86,26 @@ export default function ChatWindow() {
 
   return (
     <div className="flex h-full flex-col bg-gray-50">
-      {/* Header */}
+      {/* Header — NO back button here, ChatPage handles it */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <div className="flex items-center gap-3">
-          {/* Mobile back button */}
-          <button
-            onClick={() => setActiveConversation(null)}
-            className="md:hidden p-1 rounded-full hover:bg-gray-100"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <Avatar name={getDisplayName()} avatarUrl={getDisplayAvatar()} size="sm" />
+          {/* ✅ Add left padding on mobile so the ChatPage back button doesn't overlap */}
+          <div className="md:hidden w-8" />
+          <Avatar
+            name={getDisplayName()}
+            avatarUrl={getDisplayAvatar()}
+            size="sm"
+            online={isOtherUserOnline()}
+          />
           <div>
             <h2 className="font-medium text-gray-900 text-sm">{getDisplayName()}</h2>
             <p className="text-xs text-gray-500">
               {activeConversation.type === 'GROUP'
                 ? `${activeConversation.participants.length} members`
+                : isOtherUserOnline() === true
+                ? 'Online'
+                : isOtherUserOnline() === false
+                ? 'Offline'
                 : 'Direct message'}
             </p>
           </div>
@@ -162,20 +130,14 @@ export default function ChatWindow() {
           </div>
         ) : (
           messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              onReply={setReplyTo}
-            />
+            <MessageBubble key={message.id} message={message} onReply={setReplyTo} />
           ))
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      <TypingIndicator />
       <MessageInput replyTo={replyTo} onCancelReply={() => setReplyTo(null)} />
-
-      {/* Search Modal */}
       <SearchMessagesModal isOpen={showSearch} onClose={() => setShowSearch(false)} />
     </div>
   );
