@@ -1,8 +1,8 @@
 'use client';
 
 interface AvatarProps{
-    name: string | null;
-    avatarUrl: string | null;
+    name: string | null|undefined;
+    avatarUrl: string | null|undefined;
     size? : 'sm' | 'md' | 'lg';
     online? : boolean;
 }
