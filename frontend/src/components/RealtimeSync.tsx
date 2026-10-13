@@ -103,11 +103,39 @@ export default function RealtimeSync() {
           .updateAllReceipts(data.conversationId, data.userId, 'READ');
       }
     };
+    // ✅ Reaction added
+    const handleReactionAdded = (data: {
+      messageId: string;
+      conversationId: string;
+      reaction: {
+        id: string;
+        emoji: string;
+        userId: string;
+        user: { id: string; name: string | null; avatarUrl: string | null };
+      };
+    }) => {
+      useMessageStore.getState().addReaction(data.messageId, data.reaction);
+    };
 
+    // ✅ Reaction removed
+    const handleReactionRemoved = (data: {
+      messageId: string;
+      conversationId: string;
+      userId: string;
+      emoji: string;
+    }) => {
+      useMessageStore
+        .getState()
+        .removeReaction(data.messageId, data.userId, data.emoji);
+    };
+    
     if (socket.connected) {
       joinAllRooms();
     }
-
+    
+    
+    socket.on('message:reaction-added', handleReactionAdded);
+    socket.on('message:reaction-removed', handleReactionRemoved);
     socket.on('connect', handleConnect);
     socket.on('message:new', handleNewMessage);
     socket.on('user:presence', handlePresence);
@@ -126,6 +154,8 @@ export default function RealtimeSync() {
       socket.off('message:deleted', handleDeletedMessage);
       socket.off('typing:update', handleTypingUpdate);
       socket.off('message:status-update', handleStatusUpdate);
+      socket.off('message:reaction-added', handleReactionAdded);
+      socket.off('message:reaction-removed', handleReactionRemoved);  
     };
   }, []);
 

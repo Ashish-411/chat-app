@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export interface MessageSender {
   id: string;
@@ -48,8 +49,6 @@ interface MessageState {
   nextCursor: string | null;
   isLoading: boolean;
   hasMore: boolean;
-
-  // Typing state: userId -> isTyping
   typingUsers: Record<string, boolean>;
 
   setMessages: (messages: Message[], nextCursor: string | null) => void;
@@ -63,6 +62,12 @@ interface MessageState {
 
   updateReceipt: (messageId: string, userId: string, status: 'SENT' | 'DELIVERED' | 'READ') => void;
   updateAllReceipts: (conversationId: string, userId: string, status: 'READ') => void;
+
+  // ✅ REACTION METHODS
+  addReaction: (messageId: string, reaction: MessageReaction) => void;
+  removeReaction: (messageId: string, userId: string, emoji: string) => void;
+  sendReaction: (messageId: string, emoji: string) => Promise<void>;
+  deleteReaction: (messageId: string, emoji: string) => Promise<void>;
 
   fetchMessages: (conversationId: string, cursor?: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string, replyToId?: string) => Promise<void>;
@@ -133,7 +138,7 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     set((state) => ({
       messages: state.messages.map((m) => {
         if (m.conversationId !== conversationId) return m;
-        if (m.senderId === userId) return m; // Don't update own messages
+        if (m.senderId === userId) return m;
         const existingReceipt = m.receipts.find((r) => r.userId === userId);
         if (existingReceipt) {
           return {
@@ -146,6 +151,53 @@ export const useMessageStore = create<MessageState>((set, get) => ({
         return m;
       }),
     })),
+
+  // ✅ REACTION IMPLEMENTATIONS
+  addReaction: (messageId, reaction) =>
+    set((state) => ({
+      messages: state.messages.map((m) => {
+        if (m.id !== messageId) return m;
+        const exists = m.reactions.find(
+          (r) => r.userId === reaction.userId && r.emoji === reaction.emoji
+        );
+        if (exists) return m;
+        return { ...m, reactions: [...m.reactions, reaction] };
+      }),
+    })),
+
+  removeReaction: (messageId, userId, emoji) =>
+    set((state) => ({
+      messages: state.messages.map((m) => {
+        if (m.id !== messageId) return m;
+        return {
+          ...m,
+          reactions: m.reactions.filter(
+            (r) => !(r.userId === userId && r.emoji === emoji)
+          ),
+        };
+      }),
+    })),
+
+  sendReaction: async (messageId, emoji) => {
+    try {
+      const response = await api.post(`/messages/${messageId}/reactions`, { emoji });
+      get().addReaction(messageId, response.data);
+    } catch (err) {
+      console.error('Failed to add reaction:', err);
+    }
+  },
+
+  deleteReaction: async (messageId, emoji) => {
+    const { user } = useAuthStore.getState();
+    try {
+      await api.delete(`/messages/${messageId}/reactions/${encodeURIComponent(emoji)}`);
+      if (user) {
+        get().removeReaction(messageId, user.id, emoji);
+      }
+    } catch (err) {
+      console.error('Failed to remove reaction:', err);
+    }
+  },
 
   fetchMessages: async (conversationId, cursor) => {
     set({ isLoading: true });

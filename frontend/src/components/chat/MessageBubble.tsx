@@ -7,7 +7,7 @@ import { useMessageStore, Message } from '@/store/useMessageStore';
 import Avatar from '@/components/Avatar';
 import ReceiptTicks from './ReceiptTicks';
 import { format } from 'date-fns';
-
+import ReactionPicker from './ReactionPicker';
 interface MessageBubbleProps {
   message: Message;
   onReply: (message: Message) => void;
@@ -15,7 +15,7 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message, onReply }: MessageBubbleProps) {
   const { user } = useAuthStore();
-  const { deleteMessage, updateMessageContent } = useMessageStore();
+  const { deleteMessage, updateMessageContent,deleteReaction } = useMessageStore();
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
@@ -70,14 +70,28 @@ export default function MessageBubble({ message, onReply }: MessageBubbleProps) 
 
         <div className="relative">
           {/* Action menu button */}
+          {/* Action buttons */}
           {isOwnMessage && !isEditing && (
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="absolute -left-8 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <MoreHorizontal className="w-4 h-4 text-gray-500" />
-            </button>
+            <div className="absolute -left-16 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ReactionPicker message={message} />
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1 rounded-full hover:bg-gray-200"
+              >
+                <MoreHorizontal className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
           )}
+        {/* ============================================ */}
+          {/* REACTION PICKER FOR RECEIVED MESSAGES (right side) */}
+          {/* ============================================ */}
+          {!isOwnMessage && !isEditing && (
+            <div className="absolute -right-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <ReactionPicker message={message} />
+            </div>
+          )}
+
+
 
           {/* Dropdown menu */}
           {showMenu && (
@@ -172,19 +186,29 @@ export default function MessageBubble({ message, onReply }: MessageBubbleProps) 
           </div>
 
           {/* Reactions */}
-          {message.reactions.length > 0 && (
-            <div className="flex gap-0.5 mt-1">
-              {message.reactions.map((r) => (
-                <span
-                  key={r.id}
-                  className="inline-flex items-center px-1.5 py-0.5 bg-gray-100 rounded-full text-xs"
-                  title={r.user.name || 'Unknown'}
-                >
-                  {r.emoji}
-                </span>
-              ))}
-            </div>
-          )}
+         {/* Reactions */}
+            {message.reactions.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {message.reactions.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      if (r.userId === user?.id) {
+                        deleteReaction(message.id, r.emoji);
+                      }
+                    }}
+                    className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs border transition-colors ${
+                      r.userId === user?.id
+                        ? 'bg-emerald-50 border-emerald-300 hover:bg-red-50 hover:border-red-300'
+                        : 'bg-gray-100 border-gray-200 hover:bg-gray-200'
+                    }`}
+                    title={r.user.name || 'Unknown'}
+                  >
+                    {r.emoji}
+                  </button>
+                ))}
+              </div>
+            )}
         </div>
       </div>
     </div>
