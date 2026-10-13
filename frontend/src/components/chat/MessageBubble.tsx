@@ -8,6 +8,7 @@ import Avatar from '@/components/Avatar';
 import ReceiptTicks from './ReceiptTicks';
 import { format } from 'date-fns';
 import ReactionPicker from './ReactionPicker';
+import FileAttachment from './FileAttachment';
 interface MessageBubbleProps {
   message: Message;
   onReply: (message: Message) => void;
@@ -163,17 +164,28 @@ export default function MessageBubble({ message, onReply }: MessageBubbleProps) 
               </div>
             </div>
           ) : (
-            <div
-              className={`px-3 py-2 rounded-2xl text-sm ${
-                isOwnMessage
-                  ? 'bg-emerald-600 text-white rounded-br-sm'
-                  : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
-              }`}
-            >
-              <p className="break-words">{message.content}</p>
-            </div>
+        <div
+          className={`px-3 py-2 rounded-2xl text-sm ${
+            isOwnMessage
+              ? 'bg-emerald-600 text-white rounded-br-sm'
+              : 'bg-white text-gray-900 border border-gray-200 rounded-bl-sm'
+          }`}
+        >
+          {/* ✅ Handle different message types */}
+          {message.type === 'IMAGE' ? (
+            <img
+              src={`${process.env.NEXT_PUBLIC_API_URL}${message.content}`}
+              alt="Shared image"
+              className="max-w-[250px] max-h-[250px] rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}${message.content}`, '_blank')}
+            />
+          ) : message.type === 'FILE' ? (
+            <FileAttachment content={message.content} isOwnMessage={isOwnMessage} />
+          ) : (
+            <p className="break-words">{message.content}</p>
           )}
-
+        </div>
+        )}
           {/* Timestamp + Receipts */}
           <div className={`flex items-center gap-1 mt-0.5 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
             <span className="text-xs text-gray-400">

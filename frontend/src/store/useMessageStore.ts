@@ -70,8 +70,7 @@ interface MessageState {
   deleteReaction: (messageId: string, emoji: string) => Promise<void>;
 
   fetchMessages: (conversationId: string, cursor?: string) => Promise<void>;
-  sendMessage: (conversationId: string, content: string, replyToId?: string) => Promise<void>;
-  deleteMessage: (messageId: string) => Promise<void>;
+  sendMessage: (conversationId: string, content: string, replyToId?: string, type?: 'TEXT' | 'IMAGE' | 'FILE') => Promise<void>;  deleteMessage: (messageId: string) => Promise<void>;
   updateMessageContent: (messageId: string, content: string) => Promise<void>;
 }
 
@@ -232,21 +231,21 @@ export const useMessageStore = create<MessageState>((set, get) => ({
     }
   },
 
-  sendMessage: async (conversationId, content, replyToId) => {
-    try {
-      const body: any = { content };
-      if (replyToId) body.replyToId = replyToId;
+  sendMessage: async (conversationId, content, replyToId, type = 'TEXT') => {
+  try {
+    const body: any = { content, type };
+    if (replyToId) body.replyToId = replyToId;
 
-      const response = await api.post(
-        `/conversations/${conversationId}/messages`,
-        body
-      );
+    const response = await api.post(
+      `/conversations/${conversationId}/messages`,
+      body
+    );
 
-      get().addMessage(response.data);
-    } catch (err) {
-      console.error('Failed to send message:', err);
-    }
-  },
+    get().addMessage(response.data);
+  } catch (err) {
+    console.error('Failed to send message:', err);
+  }
+},
 
   deleteMessage: async (messageId) => {
     try {
