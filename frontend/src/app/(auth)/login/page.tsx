@@ -4,6 +4,7 @@ import {useState} from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import { connectSocket } from '@/lib/socket';
+import { subscribeToPushNotifications, requestNotificationPermission } from '@/lib/pushNotifications';
 import api from '@/lib/api';
 
 
@@ -27,6 +28,12 @@ export default function LoginPage(){
             setAuth(user,accessToken);
             connectSocket();
             router.push('/chat');
+            // Try to subscribe to push notifications (non-blocking)
+            requestNotificationPermission().then((permission) => {
+              if (permission === 'granted') {
+                subscribeToPushNotifications().catch(() => {});
+              }
+        });
         }catch(err:any){
             setError(err.response?.data?.message || "Login failed. Please check your credentials");
         }finally{

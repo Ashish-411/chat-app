@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import RealtimeSync from '@/components/RealtimeSync';
+import NotificationPermissionBanner from '@/components/NotificationPermissionBanner';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuthStore();
@@ -25,8 +26,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {/* ✅ Global real-time sync runs for all authenticated pages */}
       <RealtimeSync />
+      <NotificationPermissionBanner />
       {children}
     </>
   );
