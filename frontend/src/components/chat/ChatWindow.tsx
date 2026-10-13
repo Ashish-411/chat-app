@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Info } from 'lucide-react';
 import { useConversationStore } from '@/store/useConversationStore';
 import { useMessageStore, Message } from '@/store/useMessageStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -12,6 +12,8 @@ import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
 import SearchMessagesModal from './SearchMessagesModal';
 import TypingIndicator from './TypingIndicator';
+import GroupInfoPanel from '../group/GroupInfoPanel';
+
 
 export default function ChatWindow() {
   const { activeConversationId, conversations, presenceMap } =
@@ -23,6 +25,7 @@ export default function ChatWindow() {
   const [showSearch, setShowSearch] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
 
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
 
@@ -110,12 +113,23 @@ export default function ChatWindow() {
             </p>
           </div>
         </div>
-        <button
-          onClick={() => setShowSearch(true)}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <Search className="w-5 h-5 text-gray-600" />
-        </button>
+        <div className="flex items-center gap-1">
+          {activeConversation.type === 'GROUP' && (
+            <button
+              onClick={() => setShowGroupInfo(true)}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              title="Group info"
+            >
+              <Info className="w-5 h-5 text-gray-600" />
+            </button>
+          )}
+          <button
+            onClick={() => setShowSearch(true)}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <Search className="w-5 h-5 text-gray-600" />
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -139,6 +153,14 @@ export default function ChatWindow() {
       <TypingIndicator />
       <MessageInput replyTo={replyTo} onCancelReply={() => setReplyTo(null)} />
       <SearchMessagesModal isOpen={showSearch} onClose={() => setShowSearch(false)} />
+      {/* Group Info Panel */}
+      {activeConversation.type === 'GROUP' && (
+        <GroupInfoPanel
+          conversation={activeConversation}
+          isOpen={showGroupInfo}
+          onClose={() => setShowGroupInfo(false)}
+        />
+      )}
     </div>
   );
 }

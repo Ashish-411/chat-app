@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 import { useConversationStore } from '@/store/useConversationStore';
 import { useMessageStore, Message } from '@/store/useMessageStore';
 import { getSocket } from '@/lib/socket';
+import api from '@/lib/api';
+
 
 export default function RealtimeSync() {
   const { conversations } = useConversationStore();
@@ -128,12 +130,100 @@ export default function RealtimeSync() {
         .getState()
         .removeReaction(data.messageId, data.userId, data.emoji);
     };
-    
-    if (socket.connected) {
-      joinAllRooms();
-    }
-    
-    
+
+    // ✅ Group events
+      const handleGroupUpdated = (data: { conversationId: string; name: string }) => {
+        useConversationStore.getState().setConversations(
+          useConversationStore.getState().conversations.map((c) =>
+            c.id === data.conversationId ? { ...c, name: data.name } : c
+          )
+        );
+      };
+
+      const handleGroupMemberAdded = (data: {
+        conversationId: string;
+        addedBy: string;
+        members: { id: string; name: string | null; email: string | null; avatarUrl: string | null }[];
+      }) => {
+        // Refetch conversation to get updated participants
+        api.get(`/conversations/${data.conversationId}`).then((response) => {
+          useConversationStore.getState().setConversations(
+            useConversationStore.getState().conversations.map((c) =>
+              c.id === data.conversationId ? response.data : c
+            )
+          );
+        }).catch(() => {});
+      };
+
+      const handleGroupMemberRemoved = (data: {
+        conversationId: string;
+        removedBy: string;
+        removedUserId: string;
+      }) => {
+        // Refetch conversation
+        api.get(`/conversations/${data.conversationId}`).then((response) => {
+          useConversationStore.getState().setConversations(
+            useConversationStore.getState().conversations.map((c) =>
+              c.id === data.conversationId ? response.data : c
+            )
+          );
+        }).catch(() => {});
+      };
+
+      const handleGroupMemberLeft = (data: { conversationId: string; userId: string }) => {
+        // Refetch conversation
+        api.get(`/conversations/${data.conversationId}`).then((response) => {
+          useConversationStore.getState().setConversations(
+            useConversationStore.getState().conversations.map((c) =>
+              c.id === data.conversationId ? response.data : c
+            )
+          );
+        }).catch(() => {});
+      };
+
+      const handleGroupRoleChanged = (data: {
+        conversationId: string;
+        changedBy: string;
+        targetUserId: string;
+        role: string;
+      }) => {
+        // Refetch conversation
+        api.get(`/conversations/${data.conversationId}`).then((response) => {
+          useConversationStore.getState().setConversations(
+            useConversationStore.getState().conversations.map((c) =>
+              c.id === data.conversationId ? response.data : c
+            )
+          );
+        }).catch(() => {});
+      };
+
+      const handleAddedToConversation = (data: { conversationId: string }) => {
+        // User was added to a new conversation - refetch all
+        useConversationStore.getState().fetchConversations();
+      };
+
+      const handleRemovedFromConversation = (data: { conversationId: string }) => {
+        // User was removed - remove from list and clear active if it was active
+        const activeId = useConversationStore.getState().activeConversationId;
+        if (activeId === data.conversationId) {
+          useConversationStore.getState().setActiveConversation(null);
+        }
+        useConversationStore.getState().fetchConversations();
+      };
+
+      
+      if (socket.connected) {
+        joinAllRooms();
+      }
+      
+    socket.on('group:updated', handleGroupUpdated);
+    socket.on('group:member-added', handleGroupMemberAdded);
+    socket.on('group:member-removed', handleGroupMemberRemoved);
+    socket.on('group:member-left', handleGroupMemberLeft);
+    socket.on('group:role-changed', handleGroupRoleChanged);
+    socket.on('group:added-to-conversation', handleAddedToConversation);
+    socket.on('group:removed-from-conversation', handleRemovedFromConversation);
+      
     socket.on('message:reaction-added', handleReactionAdded);
     socket.on('message:reaction-removed', handleReactionRemoved);
     socket.on('connect', handleConnect);
@@ -155,7 +245,14 @@ export default function RealtimeSync() {
       socket.off('typing:update', handleTypingUpdate);
       socket.off('message:status-update', handleStatusUpdate);
       socket.off('message:reaction-added', handleReactionAdded);
-      socket.off('message:reaction-removed', handleReactionRemoved);  
+      socket.off('message:reaction-removed', handleReactionRemoved); 
+      socket.off('group:updated', handleGroupUpdated);
+      socket.off('group:member-added', handleGroupMemberAdded);
+      socket.off('group:member-removed', handleGroupMemberRemoved);
+      socket.off('group:member-left', handleGroupMemberLeft);
+      socket.off('group:role-changed', handleGroupRoleChanged);
+      socket.off('group:added-to-conversation', handleAddedToConversation);
+      socket.off('group:removed-from-conversation', handleRemovedFromConversation); 
     };
   }, []);
 
