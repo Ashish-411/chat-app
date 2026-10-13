@@ -9,6 +9,7 @@ import Avatar from '@/components/Avatar';
 import ConversationItem from './ConversationItem';
 import NewConversationModal from './NewConversationModel';
 import api from '@/lib/api';
+import ProfileModal from '../profile/ProfileModal';
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
@@ -17,6 +18,7 @@ export default function Sidebar() {
   const [showNewDM, setShowNewDM] = useState(false);
   const [showNewGroup, setShowNewGroup] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showProfile, setShowProfile] = useState(false);
 
   // Fetch conversations on mount
   useEffect(() => {
@@ -48,10 +50,17 @@ export default function Sidebar() {
     <div className="flex h-full w-full flex-col border-r border-gray-200 bg-white">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <div className="flex items-center gap-3">
+        <button
+          onClick={() => setShowProfile(true)}
+          className="flex items-center gap-3 rounded-lg px-2 py-1 -mx-2 hover:bg-gray-50 transition-colors"
+          title="View profile"
+        >
           <Avatar name={user?.name} avatarUrl={user?.avatarUrl} size="sm" />
-          <h1 className="text-lg font-semibold text-gray-900">Chats</h1>
-        </div>
+          <div className="text-left">
+            <p className="font-medium text-gray-900 text-sm">{user?.name || 'User'}</p>
+            <p className="text-xs text-gray-500">{user?.email}</p>
+          </div>
+        </button>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setShowNewDM(true)}
@@ -122,6 +131,8 @@ export default function Sidebar() {
         onClose={() => setShowNewGroup(false)}
         mode="group"
       />
+      {/* Profile Modal */}
+      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 }
